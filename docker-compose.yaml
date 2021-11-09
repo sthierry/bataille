@@ -11,7 +11,7 @@ services:
         ports:
             - "9906:3306"
     web:
-        image: php:7.2.2-apache
+        image: php:8.0-apache
         container_name: bataille_php
         depends_on:
             - db
