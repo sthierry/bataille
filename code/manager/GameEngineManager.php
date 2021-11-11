@@ -5,6 +5,7 @@ namespace Bataille\Manager;
 use Bataille\Model\PlayerModel;
 use Bataille\Model\DeckModel;
 use Bataille\Model\CardModel;
+use Bataille\Model\ConfrontationResultModel;
 
 /**
  * @name \Bataille\Manager\GameEngineManager
@@ -17,20 +18,82 @@ class GameEngineManager implements GameEngineManagerInterface
     private DeckModel $mainDeck;
 
     /**
+     * @var array
+     */
+    private array $playerArray;
+
+    /**
      * @param \Bataille\Model\DeckModel $mainDeck
      */
     public function __construct(DeckModel $mainDeck)
     {
         $this->mainDeck = $mainDeck;
+        $this->playerArray = [];
     }
 
-    public function confrontCard(array $playersArray): PlayerModel|null
+    public function confrontCard(array $playersArray): ConfrontationResultModel|null
     {
-        // TODO: Implement confrontCard() method.
-        return null;
+        $arrOfarrResult = [];
+        $arrResult = [];
+        $playerCount = count($playersArray);
+        foreach ($playersArray as $player)
+        {
+            $pickedCard = $this->pickCard($player);
+            if (!$pickedCard) {
+                $playerCount--;
+                continue;
+            }
+
+            $result = ['pickedCard' => $pickedCard, 'player' => $player];
+            if(!isset($arrResult[0])) {
+                $arrResult[] = $result;
+                continue;
+            }
+            $arrResult = $this->insertResultInSortedByCardPowernessArray($result, $arrResult);
+        }
+
+        if($playerCount < 2) {
+            return null;
+        }
+
+        $arrOfarrResult[] = $arrResult;
+        $confrontationResultModel = new ConfrontationResultModel();
+        $confrontationResultModel->setArrScores($arrOfarrResult);
+        $confrontationResultModel->setWinner($arrResult[0]['player']);
+        return $confrontationResultModel;
     }
 
-    private function pickCard(PlayerModel $player)
+    /**
+     * @param array $result
+     * @param array $arrResult
+     * @return array
+     */
+    private function insertResultInSortedByCardPowernessArray(array $result, array $arrResult): array
+    {
+        $pickedCard = $result['pickedCard'];
+        $player = $result['player'];
+        $tmpArrResult = [];
+        $inserted = false;
+        foreach ($arrResult as $innerResult) {
+            if ($pickedCard->getPowerness() === $innerResult['pickedCard']->getPowerness()) {
+                $arrOfarrResult[] = $this->confrontCard([$player, $innerResult['player']]);
+                $tmpArrResult[] = $result;
+                $inserted = true;
+                continue;
+            }
+            if(!$inserted && ($pickedCard->getPowerness() > $innerResult['pickedCard']->getPowerness())) {
+                $tmpArrResult[] = $result;
+                $inserted = true;
+            }
+            $tmpArrResult[] = $innerResult;
+        }
+        if(!$inserted) {
+            $tmpArrResult[] = $result;
+        }
+        return $tmpArrResult;
+    }
+
+    private function pickCard(PlayerModel $player): CardModel|null
     {
         return $player->getDeck()->pickTopCard();
     }
@@ -71,6 +134,14 @@ class GameEngineManager implements GameEngineManagerInterface
             $card->setPowerness($i);
             $this->mainDeck->addCard($card);
         }
+    }
+
+    /**
+     * Generating players
+     */
+    public function populatePlayerArray()
+    {
+        //todo voir si ça a du sens
     }
 
 }
