@@ -3,14 +3,22 @@
 namespace Bataille\Controller;
 
 use Bataille\Manager\GameEngineManager;
-use Bataille\Model\PlayerModel;
 use Bataille\Etc\DependencyInjectionContainer;
+use Bataille\View\GameSettingsView;
+use Bataille\View\GameConfrontationView;
 
 /**
  * @name \Bataille\Controller\GameController
  */
 class GameController
 {
+    public const NB_PLAYER = 2;
+    /**
+     * 0 = until player decks are empty
+     * 1 && > 1 = number of confrontations
+     */
+    public const LIMIT = 0;
+
     private GameEngineManager $gameEngineManager;
     private DependencyInjectionContainer $dependencyInjectionContainer;
 
@@ -26,49 +34,50 @@ class GameController
 
     public function indexAction()
     {
+        $this->settingsAction();
+    }
+
+    public function settingsAction() {
         $this->gameEngineManager->populateMainDeck();
-        $playersArray = [];
 
-        // for ($i=1;$i<=3;$i++) {
-        //     /**
-        //      * @var PlayerModel
-        //      */
-        //     $player = $this->dependencyInjectionContainer->instanciateClass(PlayerModel::class);
-        //     if(!$player instanceof PlayerModel) {return;}
-        //     $player->setId($i);
-        //     $player->setName('player '.$i);
-        //     $playersArray[] = $player;
-        // }
-        //todo découper indexAction en plusieurs Action renvoyant chacune vers des view.
-        $nbPlayer = 2;
+        $nbPlayer = self::NB_PLAYER;
+        $gameSettingsView = $this->dependencyInjectionContainer->instanciateClass(GameSettingsView::class);
+        if(!$gameSettingsView instanceof GameSettingsView) {return;}
+        $arrInput = [];
         for ($i=1;$i<=$nbPlayer;$i++) {
-            echo 'Enter player '.$i.' name [default = player '.$i.'] : ';
-            $name = fgets(STDIN);
-            $name = substr($name,0, -1); //fgets(STDIN) leave an EOL at the end of string.
-            var_dump($name);
-            if($name == '') {
-                $name = 'player '.$i;
-            }
-            $player = $this->dependencyInjectionContainer->instanciateClass(PlayerModel::class);
-            $player->setId($i);
-            $player->setName($name);
-            $playersArray[] = $player;
+            $arrInput[$i] = ['question' => 'Enter player '.$i.' name', 'defaultAnswer' => 'player '.$i];
         }
+        $gameSettingsView->setArrInput($arrInput);
+        $gameSettingsView->showView($this);
+    }
 
-        //TODO : Mettre le playersArray directement dans le gameEngineManager et déplacer la méthode ci-dessus sous le nom de populatePlayerArray
-        $this->gameEngineManager->distributeDeck($playersArray);
-
-        while($result = $this->gameEngineManager->confrontCard($playersArray)) {
-            echo " ".PHP_EOL;
-            echo "Confronting cards : ".PHP_EOL;
+    /**
+     * @param \Bataille\View\GameSettingsView $gameSettingsView
+     */
+    public function gameAction (GameSettingsView $gameSettingsView) {
+        $this->gameEngineManager->populatePlayerArray($gameSettingsView->getArrInput());
+        $this->gameEngineManager->distributeDeck();
+        $arrOutput = [];
+        $i=1;
+        if(self::LIMIT === 0) {
+            $i = 0;
+        }
+        while(($result = $this->gameEngineManager->confrontCard()) && ($i <= self::LIMIT)) {
+            $arrOutput[] =  " ".PHP_EOL;
+            $arrOutput[] =  "Confronting cards : ".PHP_EOL;
             foreach ($result->getArrScores() as $arrScore) {
                 foreach ($arrScore as $score) {
-                    echo 'Player '.$score['player']->getName().' picked card '.$score['pickedCard']->getName().PHP_EOL;
+                    $arrOutput[] =  'Player '.$score['player']->getName().' picked card '.$score['pickedCard']->getName().PHP_EOL;
                 }
             }
-            echo 'And the winner of this confrontation is '.$result->getWinner()->getName().PHP_EOL;
+            $arrOutput[] =  'And the winner of this confrontation is '.$result->getWinner()->getName().PHP_EOL;
+            if(self::LIMIT !== 0) {
+                $i++;
+            }
         }
-
-        echo PHP_EOL;
+        $gameConfrontationView = $this->dependencyInjectionContainer->instanciateClass(GameConfrontationView::class);
+        if(!$gameConfrontationView instanceof GameConfrontationView) {return;}
+        $gameConfrontationView->setArrOutput($arrOutput);
+        $gameConfrontationView->showView();
     }
 }

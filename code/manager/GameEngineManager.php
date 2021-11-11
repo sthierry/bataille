@@ -6,6 +6,7 @@ use Bataille\Model\PlayerModel;
 use Bataille\Model\DeckModel;
 use Bataille\Model\CardModel;
 use Bataille\Model\ConfrontationResultModel;
+use Bataille\Etc\DependencyInjectionContainer;
 
 /**
  * @name \Bataille\Manager\GameEngineManager
@@ -17,6 +18,8 @@ class GameEngineManager implements GameEngineManagerInterface
      */
     private DeckModel $mainDeck;
 
+    private DependencyInjectionContainer $dependencyInjectionContainer;
+
     /**
      * @var array
      */
@@ -24,15 +27,18 @@ class GameEngineManager implements GameEngineManagerInterface
 
     /**
      * @param \Bataille\Model\DeckModel $mainDeck
+     * @param \Bataille\Etc\DependencyInjectionContainer $dependencyInjectionContainer
      */
-    public function __construct(DeckModel $mainDeck)
+    public function __construct(DeckModel $mainDeck, \Bataille\Etc\DependencyInjectionContainer $dependencyInjectionContainer)
     {
         $this->mainDeck = $mainDeck;
         $this->playerArray = [];
+        $this->dependencyInjectionContainer = $dependencyInjectionContainer;
     }
 
-    public function confrontCard(array $playersArray): ConfrontationResultModel|null
+    public function confrontCard(): ConfrontationResultModel|null
     {
+        $playersArray = $this->playerArray;
         $arrOfarrResult = [];
         $arrResult = [];
         $playerCount = count($playersArray);
@@ -103,8 +109,9 @@ class GameEngineManager implements GameEngineManagerInterface
      * @param array $playersArray
      * @return bool
      */
-    public function distributeDeck(array $playersArray): bool
+    public function distributeDeck(): bool
     {
+        $playersArray = $this->playerArray;
         $this->mainDeck->shuffle();//On mélange les cartes avant de les distribuer.
         $numberOfPlayers = count($playersArray);
         $numberOfCardsInMainDeck = $this->mainDeck->getNumberOfCardsInTheDeck();
@@ -138,10 +145,17 @@ class GameEngineManager implements GameEngineManagerInterface
 
     /**
      * Generating players
+     * @param array $playerNamesArray [ref => ['question' => string, 'answer' => string, 'defaultAnswer' => string]
      */
-    public function populatePlayerArray()
+    public function populatePlayerArray(array $playerNamesArray)
     {
-        //todo voir si ça a du sens
+        foreach ($playerNamesArray as $key => $playerInfos)
+        {
+            $player = $this->dependencyInjectionContainer->instanciateClass(PlayerModel::class);
+            $player->setId($key);
+            $player->setName($playerInfos['answer']);
+            $this->playerArray[] = $player;
+        }
     }
 
 }

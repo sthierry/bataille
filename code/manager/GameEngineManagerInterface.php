@@ -11,8 +11,7 @@ interface GameEngineManagerInterface
 {
 
     /**
-     * @param array $playersArray
      * @return \Bataille\Model\ConfrontationResultModel|null
      */
-    public function confrontCard(array $playersArray) : ConfrontationResultModel|null;
+    public function confrontCard() : ConfrontationResultModel|null;
 }
