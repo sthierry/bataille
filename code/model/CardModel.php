@@ -38,7 +38,7 @@ class CardModel extends AbstractModel
     /**
      * @return string
      */
-    public function getName(): int
+    public function getName(): string
     {
         return $this->name;
     }
