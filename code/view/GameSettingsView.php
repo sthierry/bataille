@@ -10,7 +10,8 @@ class GameSettingsView extends abstractView
     /**
      * @inheritDoc
      */
-    public function showView(mixed $mixed = null) {
+    public function showView(mixed $mixed = null)
+    {
         $this->resolveInputs();
         $mixed->gameAction($this);
     }

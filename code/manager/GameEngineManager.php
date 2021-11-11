@@ -45,20 +45,23 @@ class GameEngineManager implements GameEngineManagerInterface
         foreach ($playersArray as $player)
         {
             $pickedCard = $this->pickCard($player);
-            if (!$pickedCard) {
+            if (!$pickedCard)
+            {
                 $playerCount--;
                 continue;
             }
 
             $result = ['pickedCard' => $pickedCard, 'player' => $player];
-            if(!isset($arrResult[0])) {
+            if (!isset($arrResult[0]))
+            {
                 $arrResult[] = $result;
                 continue;
             }
             $arrResult = $this->insertResultInSortedByCardPowernessArray($result, $arrResult);
         }
 
-        if($playerCount < 2) {
+        if ($playerCount < 2)
+        {
             return null;
         }
 
@@ -80,20 +83,24 @@ class GameEngineManager implements GameEngineManagerInterface
         $player = $result['player'];
         $tmpArrResult = [];
         $inserted = false;
-        foreach ($arrResult as $innerResult) {
-            if ($pickedCard->getPowerness() === $innerResult['pickedCard']->getPowerness()) {
+        foreach ($arrResult as $innerResult)
+        {
+            if ($pickedCard->getPowerness() === $innerResult['pickedCard']->getPowerness())
+            {
                 $arrOfarrResult[] = $this->confrontCard([$player, $innerResult['player']]);
                 $tmpArrResult[] = $result;
                 $inserted = true;
                 continue;
             }
-            if(!$inserted && ($pickedCard->getPowerness() > $innerResult['pickedCard']->getPowerness())) {
+            if (!$inserted && ($pickedCard->getPowerness() > $innerResult['pickedCard']->getPowerness()))
+            {
                 $tmpArrResult[] = $result;
                 $inserted = true;
             }
             $tmpArrResult[] = $innerResult;
         }
-        if(!$inserted) {
+        if (!$inserted)
+        {
             $tmpArrResult[] = $result;
         }
         return $tmpArrResult;
@@ -115,15 +122,18 @@ class GameEngineManager implements GameEngineManagerInterface
         $this->mainDeck->shuffle();//On mélange les cartes avant de les distribuer.
         $numberOfPlayers = count($playersArray);
         $numberOfCardsInMainDeck = $this->mainDeck->getNumberOfCardsInTheDeck();
-        if ($numberOfPlayers>$numberOfCardsInMainDeck) {
+        if ($numberOfPlayers > $numberOfCardsInMainDeck)
+        {
             return false;
         }
-        foreach($playersArray as $player) {
-            if(!$player instanceof PlayerModel) {
+        foreach ($playersArray as $player)
+        {
+            if (!$player instanceof PlayerModel)
+            {
                 var_dump('fail instance');
                 return false;
             }
-            $player->getDeck()->addStackOfCard($this->mainDeck->pickTopStackOfCard(floor($numberOfCardsInMainDeck/$numberOfPlayers)));
+            $player->getDeck()->addStackOfCard($this->mainDeck->pickTopStackOfCard(floor($numberOfCardsInMainDeck / $numberOfPlayers)));
         }
 
         return true;
@@ -134,7 +144,8 @@ class GameEngineManager implements GameEngineManagerInterface
      */
     public function populateMainDeck()
     {
-        for($i=1;$i<=52;$i++) {
+        for ($i = 1; $i <= 52; $i++)
+        {
             $card = new CardModel();
             $card->setId($i);
             $card->setName($i);

@@ -21,18 +21,21 @@ class DependencyInjectionContainer
      */
     public function instanciateClass(string $className)
     {
-        if (isset($instances[$className])) {
+        if (isset($instances[$className]))
+        {
             return $instances[$className];
         }
 
         $reflector = new ReflectionClass($className);
-        if (!$reflector->isInstantiable()) {
+        if (!$reflector->isInstantiable())
+        {
             return null;
         }
 
         $arguments = $this->getConstructorArguments($reflector);
 
-        if (!$arguments) {
+        if (!$arguments)
+        {
             return $reflector->newInstance(); //This is the recursive loop main exit condition
         }
 
@@ -44,7 +47,8 @@ class DependencyInjectionContainer
     private function getConstructorArguments(ReflectionClass $reflector)
     {
         $constructor = $reflector->getConstructor();
-        if(!$constructor) {
+        if (!$constructor)
+        {
             return null;
         }
         return $constructor->getParameters();
@@ -53,7 +57,8 @@ class DependencyInjectionContainer
     private function injectDependencies($arguments)
     {
         $dependenciesClasses = [];
-        foreach ($arguments as $argument) {
+        foreach ($arguments as $argument)
+        {
             //getName method exist in php8 but not in previous versions. (hence the benefice of using docker)
             $dependency = $argument->getType()->getName();
             //This is recursive, because instanciateClass call injectDependencies, the loop continues until no more dependencies are needed for classes

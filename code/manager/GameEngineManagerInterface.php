@@ -13,5 +13,5 @@ interface GameEngineManagerInterface
     /**
      * @return \Bataille\Model\ConfrontationResultModel|null
      */
-    public function confrontCard() : ConfrontationResultModel|null;
+    public function confrontCard(): ConfrontationResultModel|null;
 }

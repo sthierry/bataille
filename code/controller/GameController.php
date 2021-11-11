@@ -37,15 +37,20 @@ class GameController
         $this->settingsAction();
     }
 
-    public function settingsAction() {
+    public function settingsAction()
+    {
         $this->gameEngineManager->populateMainDeck();
 
         $nbPlayer = self::NB_PLAYER;
         $gameSettingsView = $this->dependencyInjectionContainer->instanciateClass(GameSettingsView::class);
-        if(!$gameSettingsView instanceof GameSettingsView) {return;}
+        if (!$gameSettingsView instanceof GameSettingsView)
+        {
+            return;
+        }
         $arrInput = [];
-        for ($i=1;$i<=$nbPlayer;$i++) {
-            $arrInput[$i] = ['question' => 'Enter player '.$i.' name', 'defaultAnswer' => 'player '.$i];
+        for ($i = 1; $i <= $nbPlayer; $i++)
+        {
+            $arrInput[$i] = ['question' => 'Enter player ' . $i . ' name', 'defaultAnswer' => 'player ' . $i];
         }
         $gameSettingsView->setArrInput($arrInput);
         $gameSettingsView->showView($this);
@@ -54,29 +59,40 @@ class GameController
     /**
      * @param \Bataille\View\GameSettingsView $gameSettingsView
      */
-    public function gameAction (GameSettingsView $gameSettingsView) {
+    public function gameAction(GameSettingsView $gameSettingsView)
+    {
         $this->gameEngineManager->populatePlayerArray($gameSettingsView->getArrInput());
         $this->gameEngineManager->distributeDeck();
+
         $arrOutput = [];
-        $i=1;
-        if(self::LIMIT === 0) {
+        $i = 1;
+        if (self::LIMIT === 0)
+        {
             $i = 0;
         }
-        while(($result = $this->gameEngineManager->confrontCard()) && ($i <= self::LIMIT)) {
-            $arrOutput[] =  " ".PHP_EOL;
-            $arrOutput[] =  "Confronting cards : ".PHP_EOL;
-            foreach ($result->getArrScores() as $arrScore) {
-                foreach ($arrScore as $score) {
-                    $arrOutput[] =  'Player '.$score['player']->getName().' picked card '.$score['pickedCard']->getName().PHP_EOL;
+        while (($result = $this->gameEngineManager->confrontCard()) && ($i <= self::LIMIT))
+        {
+            $arrOutput[] = " " . PHP_EOL;
+            $arrOutput[] = "Confronting cards : " . PHP_EOL;
+            foreach ($result->getArrScores() as $arrScore)
+            {
+                foreach ($arrScore as $score)
+                {
+                    $arrOutput[] = 'Player ' . $score['player']->getName() . ' picked card ' . $score['pickedCard']->getName() . PHP_EOL;
                 }
             }
-            $arrOutput[] =  'And the winner of this confrontation is '.$result->getWinner()->getName().PHP_EOL;
-            if(self::LIMIT !== 0) {
+            $arrOutput[] = 'And the winner of this confrontation is ' . $result->getWinner()->getName() . PHP_EOL;
+
+            if (self::LIMIT !== 0)
+            {
                 $i++;
             }
         }
         $gameConfrontationView = $this->dependencyInjectionContainer->instanciateClass(GameConfrontationView::class);
-        if(!$gameConfrontationView instanceof GameConfrontationView) {return;}
+        if (!$gameConfrontationView instanceof GameConfrontationView)
+        {
+            return;
+        }
         $gameConfrontationView->setArrOutput($arrOutput);
         $gameConfrontationView->showView();
     }

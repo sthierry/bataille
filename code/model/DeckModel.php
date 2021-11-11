@@ -82,7 +82,8 @@ class DeckModel extends AbstractModel
     private function remergeChunks($arrayChunk): array
     {
         $mergingArray = [];
-        foreach ($arrayChunk as $chunk) {
+        foreach ($arrayChunk as $chunk)
+        {
             $mergingArray = array_merge($mergingArray, $chunk);
         }
         return $mergingArray;
@@ -99,7 +100,8 @@ class DeckModel extends AbstractModel
     /**
      * @return int
      */
-    public function getNumberOfCardsInTheDeck(): int {
+    public function getNumberOfCardsInTheDeck(): int
+    {
         return count($this->cards);
     }
 }
