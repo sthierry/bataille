@@ -16,6 +16,11 @@ class PlayerModel extends AbstractModel
 
     private DeckModel $deck;
 
+    public function __construct(DeckModel $deck)
+    {
+        $this->deck = $deck;
+    }
+
     /**
      * @return string
      */
@@ -40,16 +45,6 @@ class PlayerModel extends AbstractModel
     public function getDeck()
     {
         return $this->deck;
-    }
-
-    /**
-     * @param \Bataille\Model\DeckModel $deck
-     * @return $this
-     */
-    public function setDeck($deck)
-    {
-        $this->deck = $deck;
-        return $this;
     }
 
 }
