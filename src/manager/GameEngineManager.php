@@ -123,7 +123,7 @@ class GameEngineManager implements GameEngineManagerInterface
     public function distributeDeck(): bool
     {
         $playersArray = $this->playerArray;
-        $this->mainDeck->shuffle();//On mélange les cartes avant de les distribuer.
+        $this->mainDeck->shuffle();
         $numberOfPlayers = count($playersArray);
         $numberOfCardsInMainDeck = $this->mainDeck->getNumberOfCardsInTheDeck();
         if ($numberOfPlayers > $numberOfCardsInMainDeck)
