@@ -86,10 +86,12 @@ class GameController
             $arrOutput[] = 'And the winner of this confrontation is ' . $result->getWinner()->getName() . PHP_EOL;
 
             $key = json_encode(['id' => $result->getWinner()->getId(), 'name' => $result->getWinner()->getName()]);
-            if(isset($this->arrPlayersVictoryList[$key]))
+            if (isset($this->arrPlayersVictoryList[$key]))
             {
                 $this->arrPlayersVictoryList[$key]++;
-            }else{
+            }
+            else
+            {
                 $this->arrPlayersVictoryList[$key] = 1;
             }
 
@@ -109,30 +111,38 @@ class GameController
         $gameConfrontationView->showView($this);
     }
 
-    public function resultAction() {
+    public function resultAction()
+    {
         arsort($this->arrPlayersVictoryList); //sort playerList by number of victory
 
         $arrWinner = [];
         $firstNbVictories = null;
-        $arrOutput[] = 'FINAL SCORES'.PHP_EOL;
-        foreach($this->arrPlayersVictoryList as $player => $nbVictories) {
-            $arrOutput[] = json_decode($player)->name. ' won ' .$nbVictories. ' times' . PHP_EOL;
-            if($firstNbVictories === null) {
+        $arrOutput[] = 'FINAL SCORES' . PHP_EOL;
+        foreach ($this->arrPlayersVictoryList as $player => $nbVictories)
+        {
+            $arrOutput[] = json_decode($player)->name . ' won ' . $nbVictories . ' times' . PHP_EOL;
+            if ($firstNbVictories === null)
+            {
                 $arrWinner[] = json_decode($player)->name;
                 $firstNbVictories = $nbVictories;
-            }elseif ($nbVictories === $firstNbVictories) {
+            }
+            elseif ($nbVictories === $firstNbVictories)
+            {
                 $arrWinner[] = json_decode($player)->name;
             }
         }
 
         $arrOutput[] = PHP_EOL;
         $strOutputWinner = 'And the winner';
-        if(count($arrWinner) > 1) {
-            $strOutputWinner .= 's are '.implode(' and ', $arrWinner).' ex aequo';
-        }else{
-            $strOutputWinner .= ' is '.$arrWinner[0];
+        if (count($arrWinner) > 1)
+        {
+            $strOutputWinner .= 's are ' . implode(' and ', $arrWinner) . ' ex aequo';
         }
-        $arrOutput[] = $strOutputWinner.PHP_EOL;
+        else
+        {
+            $strOutputWinner .= ' is ' . $arrWinner[0];
+        }
+        $arrOutput[] = $strOutputWinner . PHP_EOL;
 
         $gameResultView = $this->dependencyInjectionContainer->instanciateClass(GameResultView::class);
         if (!$gameResultView instanceof GameResultView)
