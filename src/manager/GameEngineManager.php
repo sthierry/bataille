@@ -60,6 +60,10 @@ class GameEngineManager implements GameEngineManagerInterface
             $arrResult = $this->insertResultInSortedByCardPowernessArray($result, $arrResult);
         }
 
+        if (count($arrResult) < $playerCount) {
+            $playerCount--;
+        }
+
         if ($playerCount < 2)
         {
             return null;
@@ -167,6 +171,16 @@ class GameEngineManager implements GameEngineManagerInterface
             $player->setName($playerInfos['answer']);
             $this->playerArray[] = $player;
         }
+    }
+
+    /**
+     * @param array $playerArray
+     * @return $this
+     */
+    public function setPlayerArray($playerArray)
+    {
+        $this->playerArray = $playerArray;
+        return $this;
     }
 
 }
