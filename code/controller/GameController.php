@@ -6,13 +6,14 @@ use Bataille\Manager\GameEngineManager;
 use Bataille\Etc\DependencyInjectionContainer;
 use Bataille\View\GameSettingsView;
 use Bataille\View\GameConfrontationView;
+use Bataille\View\GameResultView;
 
 /**
  * @name \Bataille\Controller\GameController
  */
 class GameController
 {
-    public const NB_PLAYER = 2;
+    public const NB_PLAYER = 3;
     /**
      * 0 = until player decks are empty
      * 1 && > 1 = number of confrontations
@@ -21,6 +22,7 @@ class GameController
 
     private GameEngineManager $gameEngineManager;
     private DependencyInjectionContainer $dependencyInjectionContainer;
+    private array $arrPlayersVictoryList;
 
     /**
      * @param \Bataille\Manager\GameEngineManager $gameEngineManager
@@ -64,6 +66,7 @@ class GameController
         $this->gameEngineManager->populatePlayerArray($gameSettingsView->getArrInput());
         $this->gameEngineManager->distributeDeck();
 
+        $this->arrPlayersVictoryList = [];
         $arrOutput = [];
         $i = 1;
         if (self::LIMIT === 0)
@@ -72,8 +75,7 @@ class GameController
         }
         while (($result = $this->gameEngineManager->confrontCard()) && ($i <= self::LIMIT))
         {
-            $arrOutput[] = " " . PHP_EOL;
-            $arrOutput[] = "Confronting cards : " . PHP_EOL;
+            $arrOutput[] = 'Confronting cards : ' . PHP_EOL;
             foreach ($result->getArrScores() as $arrScore)
             {
                 foreach ($arrScore as $score)
@@ -83,17 +85,61 @@ class GameController
             }
             $arrOutput[] = 'And the winner of this confrontation is ' . $result->getWinner()->getName() . PHP_EOL;
 
+            $key = json_encode(['id' => $result->getWinner()->getId(), 'name' => $result->getWinner()->getName()]);
+            if(isset($this->arrPlayersVictoryList[$key]))
+            {
+                $this->arrPlayersVictoryList[$key]++;
+            }else{
+                $this->arrPlayersVictoryList[$key] = 1;
+            }
+
             if (self::LIMIT !== 0)
             {
                 $i++;
             }
+            $arrOutput[] = PHP_EOL;
         }
+
         $gameConfrontationView = $this->dependencyInjectionContainer->instanciateClass(GameConfrontationView::class);
         if (!$gameConfrontationView instanceof GameConfrontationView)
         {
             return;
         }
         $gameConfrontationView->setArrOutput($arrOutput);
-        $gameConfrontationView->showView();
+        $gameConfrontationView->showView($this);
+    }
+
+    public function resultAction() {
+        arsort($this->arrPlayersVictoryList); //sort playerList by number of victory
+
+        $arrWinner = [];
+        $firstNbVictories = null;
+        $arrOutput[] = 'FINAL SCORES'.PHP_EOL;
+        foreach($this->arrPlayersVictoryList as $player => $nbVictories) {
+            $arrOutput[] = json_decode($player)->name. ' won ' .$nbVictories. ' times' . PHP_EOL;
+            if($firstNbVictories === null) {
+                $arrWinner[] = json_decode($player)->name;
+                $firstNbVictories = $nbVictories;
+            }elseif ($nbVictories === $firstNbVictories) {
+                $arrWinner[] = json_decode($player)->name;
+            }
+        }
+
+        $arrOutput[] = PHP_EOL;
+        $strOutputWinner = 'And the winner';
+        if(count($arrWinner) > 1) {
+            $strOutputWinner .= 's are '.implode(' and ', $arrWinner).' ex aequo';
+        }else{
+            $strOutputWinner .= ' is '.$arrWinner[0];
+        }
+        $arrOutput[] = $strOutputWinner.PHP_EOL;
+
+        $gameResultView = $this->dependencyInjectionContainer->instanciateClass(GameResultView::class);
+        if (!$gameResultView instanceof GameResultView)
+        {
+            return;
+        }
+        $gameResultView->setArrOutput($arrOutput);
+        $gameResultView->showView();
     }
 }
