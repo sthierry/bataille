@@ -13,7 +13,7 @@ use Bataille\View\GameResultView;
  */
 class GameController
 {
-    public const NB_PLAYER = 3;
+    public const NB_PLAYER = 2;
     /**
      * 0 = until player decks are empty
      * 1 && > 1 = number of confrontations
